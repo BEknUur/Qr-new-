@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #09090b;
+    --foreground: #f8fafc;
+    --primary: #22c55e;
+    --primary-dark: #16a34a;
+    --secondary: #1e293b;
+    --accent: #2563eb;
+    --border: #3f3f46;
+    --radius: 0.75rem;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-bold;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+}
+
+  .glow-btn {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl;
+  }
+
+  .secondary-btn {
+    @apply bg-secondary text-white font-semibold py-3 px-6 rounded-lg border border-border hover:bg-opacity-80 transition;
+  }
+
+  .input-field {
+    @apply w-full py-3 px-4 bg-secondary text-white border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none placeholder-gray-400;
+  }
+
+  .floating-label {
+    @apply relative;
+  }
+
+  .floating-label input,
+  .floating-label textarea,
+  .floating-label select {
+    @apply input-field placeholder-transparent;
+  }
+
+  .floating-label label {
+    @apply absolute left-4 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500;
+  }
+
+  .floating-label select:required:invalid {
+    color: gray;
+  }
+
+  .file-upload-box {
+    @apply border-2 border-dashed border-gray-500 rounded-lg p-6 bg-secondary text-center flex flex-col items-center justify-center space-y-2 text-gray-400;
+  }
+
+  .error-box {
+    @apply bg-red-800 text-white p-3 rounded-lg text-center;
+  }
+
+  .success-box {
+    @apply bg-green-800 text-white p-3 rounded-lg text-center;
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 1s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+
+}
+
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 1;
+  cursor: pointer; 
+}
