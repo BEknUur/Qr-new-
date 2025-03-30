@@ -271,7 +271,7 @@ const HomePage = () => {
                       ))}
                     </div>
                     <Link
-                      to={`/cars/`}
+                      to={`/about/`}
                       className="flex items-center text-blue-400 font-medium hover:text-blue-300 transition-colors"
                     >
                       Details <ChevronRight className="w-4 h-4 ml-1" />
@@ -339,7 +339,7 @@ const HomePage = () => {
                   {cat.desc}
                 </p>
                 <Link
-                  to={`/cars/`}
+                  to={`/locations/`}
                   className="inline-block mt-3 text-blue-400 opacity-0 transform translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0"
                 >
                   Browse Category →

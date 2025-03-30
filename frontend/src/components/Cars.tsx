@@ -13,6 +13,8 @@ interface CarData {
   image_url?: string; 
 }
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -34,11 +36,10 @@ const Cars = () => {
       try {
         setLoading(true);
         
-        let url = 'http://localhost:8000/car/cars';
-        
-       
+        let url = `${API_BASE}/car/cars`;
+
         if (locationFilter || typeFilter) {
-          url = 'http://localhost:8000/car/cars/search';
+          url = `${API_BASE}/car/cars/search`;
           const params = new URLSearchParams();
           
           if (locationFilter) params.append('location', locationFilter);
