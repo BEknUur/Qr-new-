@@ -10,7 +10,8 @@ from app.utils.converters import car_to_response
 
 router = APIRouter()
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://68.183.15.162/api"
+
 
 @router.post("/cars", response_model=CarResponse)
 async def create_car(

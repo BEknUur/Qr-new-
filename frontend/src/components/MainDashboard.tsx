@@ -15,12 +15,11 @@ const MainDashboard: React.FC = () => {
   const [username, setUsername] = useState("User");
   
   useEffect(() => {
-    // Get the user's email from localStorage
+    
     const userEmail = localStorage.getItem("userEmail");
     
     if (userEmail) {
-      // Extract username from email (everything before @)
-      // Or just display the email if you prefer
+      
       const extractedUsername = userEmail.split('@')[0];
       setUsername(extractedUsername);
     }
