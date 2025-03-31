@@ -31,7 +31,7 @@ const Cars = () => {
   const [error, setError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
 
-  // Safe access function for nested properties
+  
   const safeGet = (obj: any, path: string, defaultValue: any = undefined) => {
     if (!obj) return defaultValue;
     const travel = (regexp: RegExp) =>
@@ -43,20 +43,20 @@ const Cars = () => {
     return result === undefined || result === null ? defaultValue : result;
   };
 
-  // Safe array check function
+  
   const ensureArray = (data: any): any[] => {
     if (!data) return [];
     if (Array.isArray(data)) return data;
     if (typeof data === 'object') {
-      // Try to find any array property
+      
       for (const key in data) {
         if (Array.isArray(data[key])) return data[key];
       }
-      // If object itself looks like a car, wrap it
+     
       if ('id' in data || 'name' in data) return [data];
     }
     console.warn("Could not extract array from data:", data);
-    return []; // Return empty array as fallback
+    return []; 
   };
 
   useEffect(() => {
@@ -93,12 +93,12 @@ const Cars = () => {
           console.log("\u{1F4CA} Parsed API response:", responseData);
           setRawResponse(responseData);
           
-          // Try multiple possible locations for the cars data
+         
           let carsData: CarData[] = [];
           
-          // Common patterns in API responses
+          
           const possiblePaths = [
-            '', // direct array
+            '', 
             'data',
             'cars',
             'results',
@@ -108,7 +108,7 @@ const Cars = () => {
             'data.results'
           ];
           
-          // Try each path until we find an array
+          
           for (const path of possiblePaths) {
             const dataAtPath = path ? safeGet(responseData, path) : responseData;
             if (dataAtPath) {
@@ -121,7 +121,7 @@ const Cars = () => {
             }
           }
           
-          // If we still don't have data, try one last approach - any array in the response
+          
           if (carsData.length === 0) {
             const findArrays = (obj: any): any[] => {
               if (!obj || typeof obj !== 'object') return [];
@@ -169,7 +169,7 @@ const Cars = () => {
             }
           }
           
-          // Validate and sanitize car data - Здесь исправление на проверку массива
+          
           if (Array.isArray(carsData)) {
             carsData = carsData.map((car, index) => ({
               id: car?.id || index + 1,
@@ -231,7 +231,7 @@ const Cars = () => {
         console.error('❌ Error fetching cars:', error);
         setError(`Failed to load cars: ${error instanceof Error ? error.message : 'Unknown error'}`);
         
-        // Create dummy data for UI testing even when API fails
+        
         const dummyCars: CarData[] = [
           {
             id: 1,

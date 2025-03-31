@@ -59,13 +59,13 @@ console.log("🚗 API data before setCars:", carsResponse.data);
 console.log("🧪 Type:", typeof carsResponse.data);
 console.log("🧮 Array length:", Array.isArray(carsResponse.data) ? carsResponse.data.length : "Not an array");
 
-// 💡 Безопасная проверка:
+
 if (Array.isArray(carsResponse.data)) {
   setCars(carsResponse.data);
   setFilteredCars(carsResponse.data);
 } else {
   console.error("❌ Response is not an array. Something's wrong:", carsResponse.data);
-  setCars([]); // очищаем
+  setCars([]); 
   setFilteredCars([]);
 }
 

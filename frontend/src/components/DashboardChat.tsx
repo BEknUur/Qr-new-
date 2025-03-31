@@ -51,7 +51,8 @@ const DashboardChat: React.FC = () => {
       socket.close();
     }
 
-    const newSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${userEmail}`);
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const newSocket = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${userEmail}`);
 
     
     newSocket.onopen = () => {
