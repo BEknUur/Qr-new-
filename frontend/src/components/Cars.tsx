@@ -29,6 +29,8 @@ const Cars = () => {
   const [priceSort, setPriceSort] = useState<"none" | "asc" | "desc">("none");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // Добавляем состояние для хранения ответа сервера в целях отладки
+  const [rawResponse, setRawResponse] = useState<any>(null);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -46,6 +48,8 @@ const Cars = () => {
   
           url = `${url}?${params.toString()}`;
         }
+        
+        console.log("🚀 Fetching cars from URL:", url);
   
         const response = await fetch(url);
   
@@ -53,26 +57,69 @@ const Cars = () => {
           throw new Error(`Error fetching cars: ${response.status}`);
         }
   
-        const responseData = await response.json();
+        // Получаем данные ответа в виде текста для отладки
+        const responseText = await response.text();
+        console.log("📦 Raw API response text:", responseText);
         
+        // Пытаемся разобрать JSON вручную
+        let responseData;
+        try {
+          responseData = JSON.parse(responseText);
+          console.log("📊 Parsed API response:", responseData);
+          console.log("📊 Response type:", typeof responseData);
+          
+          // Сохраняем сырой ответ для отображения в UI при отладке
+          setRawResponse(responseData);
+          
+          if (responseData === null) {
+            throw new Error("API returned null");
+          }
+        } catch (e) {
+          console.error("❌ JSON parsing error:", e);
+          if (e instanceof Error) {
+            throw new Error(`Invalid JSON response: ${e.message}`);
+          } else {
+            throw new Error('Invalid JSON response: Unknown error occurred');
+          }
+        }
         
+        // Проверяем формат данных и извлекаем массив автомобилей
         let carsData: CarData[] = [];
         
         if (Array.isArray(responseData)) {
-          
+          console.log("✅ Response is an array");
           carsData = responseData;
-        } else if (responseData.data && Array.isArray(responseData.data)) {
-        
-          carsData = responseData.data;
-        } else if (responseData.cars && Array.isArray(responseData.cars)) {
+        } else if (typeof responseData === 'object' && responseData !== null) {
+          console.log("🔍 Response is an object, checking properties...");
           
-          carsData = responseData.cars;
+          // Проверяем все поля объекта, чтобы найти массив
+          for (const key in responseData) {
+            console.log(`📝 Checking property: ${key}, type:`, typeof responseData[key]);
+            if (Array.isArray(responseData[key])) {
+              console.log(`✅ Found array in property: ${key}, length:`, responseData[key].length);
+              carsData = responseData[key];
+              break;
+            }
+          }
+          
+          // Если массив всё ещё не найден
+          if (carsData.length === 0) {
+            console.error("❌ No array found in the response object");
+            // В крайнем случае, пробуем создать массив с одним элементом из самого объекта
+            if (responseData.id && responseData.name) {
+              console.log("⚠️ Attempting to create an array from the response object itself");
+              carsData = [responseData];
+            } else {
+              throw new Error("Could not find car data in the response");
+            }
+          }
         } else {
-         
-          console.error("❌ Unexpected response format:", responseData);
-          throw new Error("Invalid response format from server");
+          console.error("❌ Unexpected response type:", typeof responseData);
+          throw new Error(`Unexpected response type: ${typeof responseData}`);
         }
   
+        console.log("🚗 Extracted cars data:", carsData);
+        
         setCars(carsData);
   
         let processedData = [...carsData];
@@ -93,8 +140,8 @@ const Cars = () => {
         setFilteredCars(processedData);
         setError(null);
       } catch (error) {
-        console.error('Error fetching cars:', error);
-        setError('Failed to load cars. Please try again later.');
+        console.error('❌ Error fetching cars:', error);
+        setError(`Failed to load cars: ${error instanceof Error ? error.message : 'Unknown error'}`);
         setCars([]);
         setFilteredCars([]);
       } finally {
@@ -105,9 +152,19 @@ const Cars = () => {
     fetchCars();
   }, [locationFilter, typeFilter, searchTerm, priceSort]);
   
-  // Вычисляем уникальные локации и типы автомобилей из имеющихся данных
-  const locations = Array.from(new Set(cars.map(car => car.location)));
-  const carTypes = Array.from(new Set(cars.map(car => car.car_type)));
+  // Безопасное получение уникальных локаций и типов из данных
+  const getUniqueValues = (arr: CarData[], property: keyof CarData): string[] => {
+    try {
+      const values = arr.map(item => String(item[property]));
+      return Array.from(new Set(values)).filter(Boolean);
+    } catch (e) {
+      console.error(`Error getting unique ${property}:`, e);
+      return [];
+    }
+  };
+  
+  const locations = getUniqueValues(cars, 'location');
+  const carTypes = getUniqueValues(cars, 'car_type');
   
   const getCarImage = (car: CarData) => {
     if (car.image_url) return car.image_url;
@@ -151,7 +208,6 @@ const Cars = () => {
         </div>
       </div>
 
-    
       <div className="container mx-auto px-6 py-8">
         <div className="bg-blue-950/50 rounded-lg p-6 mb-12 shadow-lg border border-blue-900/50">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -219,18 +275,21 @@ const Cars = () => {
           </div>
         </div>
 
-      
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading vehicles...</p>
-          </div>
-        )}
-
-      
+        {/* Отладочная информация */}
         {error && (
-          <div className="text-center py-12 bg-red-900/20 rounded-lg border border-red-800">
-            <p className="text-red-400">{error}</p>
+          <div className="mb-8 p-4 bg-red-900/20 border border-red-800 rounded-lg overflow-auto">
+            <h3 className="text-red-400 font-bold mb-2">Error Details</h3>
+            <p className="text-red-300 mb-4">{error}</p>
+            
+            {rawResponse && (
+              <div>
+                <h4 className="text-yellow-400 font-bold mb-2">API Response:</h4>
+                <pre className="bg-black/50 p-4 rounded-md overflow-auto text-xs text-gray-300">
+                  {JSON.stringify(rawResponse, null, 2)}
+                </pre>
+              </div>
+            )}
+            
             <button 
               className="mt-4 bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md transition-colors duration-300"
               onClick={() => window.location.reload()}
@@ -239,20 +298,25 @@ const Cars = () => {
             </button>
           </div>
         )}
-
+      
+        {loading && (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading vehicles...</p>
+          </div>
+        )}
        
         {!loading && !error && (
           <p className="text-gray-400 mb-6">
             Showing {filteredCars.length} of {cars.length} vehicles
           </p>
         )}
-
         
         {!loading && !error && filteredCars.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {filteredCars.map((car, index) => (
               <motion.div
-                key={car.id}
+                key={car.id || index} // Используем index как fallback для key
                 className="bg-blue-950/30 rounded-lg overflow-hidden border border-blue-900/50 hover:border-blue-600/50 transition-all duration-300 shadow-lg"
                 variants={fadeInUp}
                 initial="hidden"
@@ -265,34 +329,30 @@ const Cars = () => {
                     alt={car.name}
                     className="w-full h-56 object-cover transition-transform duration-500 hover:scale-105"
                     onError={(e) => {
-                    
                       const target = e.target as HTMLImageElement;
                       target.src = "/images/car-placeholder.jpg";
                     }}
                   />
                   <div className="absolute top-0 right-0 bg-blue-600 text-white py-1 px-4 rounded-bl-lg font-bold">
-                    {car.price_per_day.toLocaleString()} ₸/day
+                    {car.price_per_day?.toLocaleString() || 'N/A'} ₸/day
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-xl font-bold text-white">{car.name}</h3>
+                    <h3 className="text-xl font-bold text-white">{car.name || 'Unknown Car'}</h3>
                     <div className="flex items-center text-sm text-gray-400">
                       <MapPin size={16} className="mr-1" />
-                      {car.location}
+                      {car.location || 'Unknown Location'}
                     </div>
                   </div>
-                  <p className="text-gray-400 mb-4">{car.description}</p>
+                  <p className="text-gray-400 mb-4">{car.description || 'No description available'}</p>
                   <div className="flex justify-between items-center">
                     <div className="flex space-x-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star key={star} className="w-4 h-4 text-blue-500 fill-blue-500" />
                       ))}
                     </div>
-                    <span className="text-blue-400 font-medium">{car.car_type}</span>
-                  </div>
-                  <div className="mt-6">
-                  
+                    <span className="text-blue-400 font-medium">{car.car_type || 'Unknown Type'}</span>
                   </div>
                 </div>
               </motion.div>
