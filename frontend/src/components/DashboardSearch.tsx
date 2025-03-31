@@ -54,7 +54,7 @@ const DashboardSearch: React.FC = () => {
       try {
         setIsLoading(true);
         
-        const carsResponse = await axios.get<Car[]>(`${API_URL}/car/cars/`);
+        const carsResponse = await axios.get(`${API_URL}/car/cars/`);
         setCars(carsResponse.data);
         setFilteredCars(carsResponse.data);
 
