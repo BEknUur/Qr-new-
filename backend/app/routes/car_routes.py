@@ -106,7 +106,7 @@ def get_user_cars(email: str, db: Session = Depends(get_db)):
     cars = db.query(Car).filter(Car.owner_email == email).all()
     return [car_to_response(c) for c in cars]
 
-# Added edit car endpoint
+
 @router.put("/cars/{car_id}", response_model=CarResponse)
 async def update_car(
     car_id: int,
@@ -122,7 +122,7 @@ async def update_car(
     """
     Update an existing car's details
     """
-    # First check if car exists and belongs to the user
+   
     car = db.query(Car).filter(Car.id == car_id).first()
     if not car:
         raise HTTPException(status_code=404, detail="Car not found")
@@ -130,7 +130,7 @@ async def update_car(
     if car.owner_email != email:
         raise HTTPException(status_code=403, detail="Not authorized to edit this car")
     
-    # Update car attributes if provided
+    
     if name is not None:
         car.name = name
     if price_per_day is not None:
@@ -142,7 +142,7 @@ async def update_car(
     if description is not None:
         car.description = description
     
-    # Handle image upload if provided
+   
     if file:
         os.makedirs("car_uploads", exist_ok=True)
         file_path = f"car_uploads/car_{car_id}_{file.filename}"
@@ -157,7 +157,7 @@ async def update_car(
     
     return car_to_response(car)
 
-# Added endpoint to get a specific car by ID
+
 @router.get("/cars/{car_id}", response_model=CarResponse)
 def get_car_by_id(car_id: int, db: Session = Depends(get_db)):
     """
@@ -169,7 +169,7 @@ def get_car_by_id(car_id: int, db: Session = Depends(get_db)):
     
     return car_to_response(car)
 
-# Added endpoint to delete a car
+
 @router.delete("/cars/{car_id}")
 def delete_car(car_id: int, email: str, db: Session = Depends(get_db)):
     """
@@ -182,7 +182,7 @@ def delete_car(car_id: int, email: str, db: Session = Depends(get_db)):
     if car.owner_email != email:
         raise HTTPException(status_code=403, detail="Not authorized to delete this car")
     
-    # Delete the car's image file if it exists
+   
     if car.image_url and car.image_url.startswith(BASE_URL):
         image_path = car.image_url.replace(BASE_URL + "/", "")
         if os.path.exists(image_path):

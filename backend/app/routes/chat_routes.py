@@ -15,7 +15,7 @@ def get_messages(
     receiver_username: str, 
     db: Session = Depends(get_db)
 ):
-    # Get receiver's email from username
+   
     receiver = db.query(User).filter(User.username == receiver_username).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
@@ -37,12 +37,12 @@ def get_messages(
 
 @router.post("/send", response_model=MessageResponse)
 def send_message(message: MessageCreate, db: Session = Depends(get_db)):
-    # Get receiver's email from username
+    
     receiver = db.query(User).filter(User.username == message.receiver_username).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
     
-    # Create and save message
+   
     new_message = Message(
         sender_email=message.sender_email,
         receiver_email=receiver.email,
