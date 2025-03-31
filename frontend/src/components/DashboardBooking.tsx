@@ -73,14 +73,15 @@ const DashboardBooking: React.FC = () => {
         });
         
         
-        const transformedCars: Car[] = response.data.map((car: Car) => ({
-          ...car,
-          
-          make: car.make || car.name?.split(' ')[0] || car.car_type,
-          model: car.model || car.name?.split(' ').slice(1).join(' ') || '',
-          price: car.price_per_day,
-          image: car.image_url || `https://via.placeholder.com/300x200?text=${car.car_type}`
-        }));
+        const transformedCars: Car[] = Array.isArray(response.data)
+        ? response.data.map((car: Car) => ({
+            ...car,
+            make: car.make || car.name?.split(' ')[0] || car.car_type,
+            model: car.model || car.name?.split(' ').slice(1).join(' ') || '',
+            price: car.price_per_day,
+            image: car.image_url || `https://via.placeholder.com/300x200?text=${car.car_type}`
+          }))
+        : [];
         
         setAvailableCars(transformedCars);
         

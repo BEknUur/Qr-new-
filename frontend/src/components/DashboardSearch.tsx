@@ -59,8 +59,14 @@ const DashboardSearch: React.FC = () => {
         setFilteredCars(carsResponse.data);
 
         
-        const uniqueLocations = [...new Set<string>(carsResponse.data.map((car: Car) => car.location))];
-        const uniqueCarTypes = [...new Set(carsResponse.data.map((car: Car) => car.car_type))];
+        const uniqueLocations = Array.isArray(carsResponse.data)
+        ? [...new Set<string>(carsResponse.data.map((car: Car) => car.location))]
+        : [];
+      
+      const uniqueCarTypes = Array.isArray(carsResponse.data)
+        ? [...new Set<string>(carsResponse.data.map((car: Car) => car.car_type))]
+        : [];
+      
         setLocations(uniqueLocations);
         setCarTypes(uniqueCarTypes);
 
@@ -70,7 +76,10 @@ const DashboardSearch: React.FC = () => {
         });
         
         
-        const favoriteIds = favoritesResponse.data.map((fav: any) => fav.car_id);
+        const favoriteIds = Array.isArray(favoritesResponse.data)
+        ? favoritesResponse.data.map((fav: any) => fav.car_id)
+        : [];
+      
         setFavorites(favoriteIds);
       } catch (err) {
         console.error("Error loading data:", err);

@@ -60,10 +60,12 @@ function DashboardAds() {
      
       const response = await axios.get(`${API_URL}/car/user-cars?email=${userEmail}`);
       if (response.data && Array.isArray(response.data)) {
-        const transformedCars = response.data.map((car: any) => ({
-          ...car,
-          price: `${car.price_per_day}`
-        }));
+        const transformedCars = Array.isArray(response.data)
+  ? response.data.map((car: any) => ({
+      ...car,
+      price: `${car.price_per_day}`
+    }))
+  : [];
         setUploadedCars(transformedCars);
       }
     } catch (err) {
