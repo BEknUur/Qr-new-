@@ -16,7 +16,7 @@ const EditCar: React.FC = () => {
   });
 
   useEffect(() => {
-    axios.get(`${API_URL}/cars/${id}`)
+    axios.get(`${API_URL}/car/cars/${id}`)
       .then((response) => setCar(response.data))
       .catch((error) => console.error("Error fetching car:", error));
   }, [id]);
