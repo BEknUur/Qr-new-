@@ -36,107 +36,66 @@ const Cars = () => {
     const fetchCars = async () => {
       try {
         setLoading(true);
-  
+    
         let url = `${API_BASE}/car/cars`;
-  
+    
         if (locationFilter || typeFilter) {
           url = `${API_BASE}/car/cars/search`;
           const params = new URLSearchParams();
-  
+    
           if (locationFilter) params.append('location', locationFilter);
           if (typeFilter) params.append('car_type', typeFilter);
-  
+    
           url = `${url}?${params.toString()}`;
         }
-        
-        console.log("🚀 Fetching cars from URL:", url);
-  
+    
+        console.log("\u{1F680} Fetching cars from URL:", url);
+    
         const response = await fetch(url);
-  
+    
         if (!response.ok) {
           throw new Error(`Error fetching cars: ${response.status}`);
         }
-  
-        // Получаем данные ответа в виде текста для отладки
+    
         const responseText = await response.text();
-        console.log("📦 Raw API response text:", responseText);
-        
-        // Пытаемся разобрать JSON вручную
+        console.log("\u{1F4E6} Raw API response text:", responseText);
+    
         let responseData;
         try {
           responseData = JSON.parse(responseText);
-          console.log("📊 Parsed API response:", responseData);
-          console.log("📊 Response type:", typeof responseData);
-          
-          // Сохраняем сырой ответ для отображения в UI при отладке
+          console.log("\u{1F4CA} Parsed API response:", responseData);
+          console.log("\u{1F4CA} Response type:", typeof responseData);
           setRawResponse(responseData);
-          
-          if (responseData === null) {
-            throw new Error("API returned null");
+    
+          // Сразу проверяем, является ли это массивом
+          if (!Array.isArray(responseData)) {
+            throw new Error("Expected array but got: " + typeof responseData);
           }
         } catch (e) {
-          console.error("❌ JSON parsing error:", e);
-          if (e instanceof Error) {
-            throw new Error(`Invalid JSON response: ${e.message}`);
-          } else {
-            throw new Error('Invalid JSON response: Unknown error occurred');
-          }
+          console.error("\u274C JSON parsing error:", e);
+          throw new Error('Invalid JSON response');
         }
-        
-        // Проверяем формат данных и извлекаем массив автомобилей
-        let carsData: CarData[] = [];
-        
-        if (Array.isArray(responseData)) {
-          console.log("✅ Response is an array");
-          carsData = responseData;
-        } else if (typeof responseData === 'object' && responseData !== null) {
-          console.log("🔍 Response is an object, checking properties...");
-          
-          // Проверяем все поля объекта, чтобы найти массив
-          for (const key in responseData) {
-            console.log(`📝 Checking property: ${key}, type:`, typeof responseData[key]);
-            if (Array.isArray(responseData[key])) {
-              console.log(`✅ Found array in property: ${key}, length:`, responseData[key].length);
-              carsData = responseData[key];
-              break;
-            }
-          }
-          
-          // Если массив всё ещё не найден
-          if (carsData.length === 0) {
-            console.error("❌ No array found in the response object");
-            // В крайнем случае, пробуем создать массив с одним элементом из самого объекта
-            if (responseData.id && responseData.name) {
-              console.log("⚠️ Attempting to create an array from the response object itself");
-              carsData = [responseData];
-            } else {
-              throw new Error("Could not find car data in the response");
-            }
-          }
-        } else {
-          console.error("❌ Unexpected response type:", typeof responseData);
-          throw new Error(`Unexpected response type: ${typeof responseData}`);
-        }
-  
-        console.log("🚗 Extracted cars data:", carsData);
-        
+    
+        const carsData: CarData[] = responseData;
+        console.log("\u{1F697} Extracted cars data:", carsData);
+    
         setCars(carsData);
-  
+    
         let processedData = [...carsData];
-  
+    
         if (searchTerm) {
           processedData = processedData.filter(car =>
             car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             car.description.toLowerCase().includes(searchTerm.toLowerCase())
           );
         }
-  
+    
         if (priceSort === "asc") {
           processedData.sort((a, b) => a.price_per_day - b.price_per_day);
         } else if (priceSort === "desc") {
           processedData.sort((a, b) => b.price_per_day - a.price_per_day);
         }
-  
+    
         setFilteredCars(processedData);
         setError(null);
       } catch (error) {
