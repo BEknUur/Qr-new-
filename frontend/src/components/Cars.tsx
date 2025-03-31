@@ -30,53 +30,57 @@ const Cars = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data from the API
   useEffect(() => {
     const fetchCars = async () => {
       try {
         setLoading(true);
-        
+  
         let url = `${API_BASE}/car/cars`;
-
+  
         if (locationFilter || typeFilter) {
           url = `${API_BASE}/car/cars/search`;
           const params = new URLSearchParams();
-          
+  
           if (locationFilter) params.append('location', locationFilter);
           if (typeFilter) params.append('car_type', typeFilter);
-          
+  
           url = `${url}?${params.toString()}`;
         }
-        
+  
         const response = await fetch(url);
-        
+  
         if (!response.ok) {
           throw new Error(`Error fetching cars: ${response.status}`);
         }
-        
+  
         const data = await response.json();
-        setCars(data);
-        
-      
-        let processedData = [...data];
-        
-       
-        if (searchTerm) {
-          processedData = processedData.filter(car => 
-            car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            car.description.toLowerCase().includes(searchTerm.toLowerCase())
-          );
+  
+        if (Array.isArray(data)) {
+          setCars(data);
+  
+          let processedData = [...data];
+  
+          if (searchTerm) {
+            processedData = processedData.filter(car =>
+              car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              car.description.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
+  
+          if (priceSort === "asc") {
+            processedData.sort((a, b) => a.price_per_day - b.price_per_day);
+          } else if (priceSort === "desc") {
+            processedData.sort((a, b) => b.price_per_day - a.price_per_day);
+          }
+  
+          setFilteredCars(processedData);
+          setError(null);
+        } else {
+          console.error("❌ Expected array, but got:", data);
+          setError("Server error: invalid data format.");
+          setCars([]);
+          setFilteredCars([]);
         }
-        
-        
-        if (priceSort === "asc") {
-          processedData.sort((a, b) => a.price_per_day - b.price_per_day);
-        } else if (priceSort === "desc") {
-          processedData.sort((a, b) => b.price_per_day - a.price_per_day);
-        }
-        
-        setFilteredCars(processedData);
-        setError(null);
       } catch (error) {
         console.error('Error fetching cars:', error);
         setError('Failed to load cars. Please try again later.');
@@ -84,9 +88,10 @@ const Cars = () => {
         setLoading(false);
       }
     };
-    
+  
     fetchCars();
   }, [locationFilter, typeFilter, searchTerm, priceSort]);
+  
 
   const locations = Array.from(new Set(cars.map(car => car.location)));
   const carTypes = Array.from(new Set(cars.map(car => car.car_type)));
