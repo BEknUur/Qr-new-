@@ -29,7 +29,6 @@ const Cars = () => {
   const [priceSort, setPriceSort] = useState<"none" | "asc" | "desc">("none");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  // Добавляем состояние для хранения ответа сервера в целях отладки
   const [rawResponse, setRawResponse] = useState<any>(null);
 
   useEffect(() => {
@@ -67,37 +66,59 @@ const Cars = () => {
           console.log("\u{1F4CA} Response type:", typeof responseData);
           setRawResponse(responseData);
     
-          // Сразу проверяем, является ли это массивом
-          if (!Array.isArray(responseData)) {
-            throw new Error("Expected array but got: " + typeof responseData);
+          // Fix for the data structure issue - handle both array and object with data property
+          let carsData: CarData[] = [];
+          
+          if (Array.isArray(responseData)) {
+            carsData = responseData;
+          } else if (responseData && typeof responseData === 'object') {
+            // Check if response has a data property that's an array
+            if (responseData.data && Array.isArray(responseData.data)) {
+              carsData = responseData.data;
+            } else if (responseData.cars && Array.isArray(responseData.cars)) {
+              carsData = responseData.cars;
+            } else {
+              // If we have an object but can't find an array, try to convert it
+              const possibleArrayData = Object.values(responseData).find(val => Array.isArray(val));
+              if (possibleArrayData) {
+                carsData = possibleArrayData as CarData[];
+              } else {
+                console.warn("Could not find array data in response:", responseData);
+                // If all else fails, see if the object itself matches our schema
+                if ('id' in responseData && 'name' in responseData) {
+                  carsData = [responseData as CarData];
+                } else {
+                  throw new Error("Could not extract car data from response");
+                }
+              }
+            }
           }
+          
+          console.log("\u{1F697} Extracted cars data:", carsData);
+    
+          setCars(carsData);
+    
+          let processedData = [...carsData];
+    
+          if (searchTerm) {
+            processedData = processedData.filter(car =>
+              car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              car.description.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
+    
+          if (priceSort === "asc") {
+            processedData.sort((a, b) => a.price_per_day - b.price_per_day);
+          } else if (priceSort === "desc") {
+            processedData.sort((a, b) => b.price_per_day - a.price_per_day);
+          }
+    
+          setFilteredCars(processedData);
+          setError(null);
         } catch (e) {
           console.error("\u274C JSON parsing error:", e);
-          throw new Error('Invalid JSON response');
+          throw new Error('Invalid JSON response or data structure');
         }
-    
-        const carsData: CarData[] = responseData;
-        console.log("\u{1F697} Extracted cars data:", carsData);
-    
-        setCars(carsData);
-    
-        let processedData = [...carsData];
-    
-        if (searchTerm) {
-          processedData = processedData.filter(car =>
-            car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            car.description.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        }
-    
-        if (priceSort === "asc") {
-          processedData.sort((a, b) => a.price_per_day - b.price_per_day);
-        } else if (priceSort === "desc") {
-          processedData.sort((a, b) => b.price_per_day - a.price_per_day);
-        }
-    
-        setFilteredCars(processedData);
-        setError(null);
       } catch (error) {
         console.error('❌ Error fetching cars:', error);
         setError(`Failed to load cars: ${error instanceof Error ? error.message : 'Unknown error'}`);
