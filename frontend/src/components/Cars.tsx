@@ -33,6 +33,7 @@ const Cars = () => {
 
   // Safe access function for nested properties
   const safeGet = (obj: any, path: string, defaultValue: any = undefined) => {
+    if (!obj) return defaultValue;
     const travel = (regexp: RegExp) =>
       String.prototype.split
         .call(path, regexp)
@@ -44,8 +45,9 @@ const Cars = () => {
 
   // Safe array check function
   const ensureArray = (data: any): any[] => {
+    if (!data) return [];
     if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object') {
+    if (typeof data === 'object') {
       // Try to find any array property
       for (const key in data) {
         if (Array.isArray(data[key])) return data[key];
@@ -167,17 +169,22 @@ const Cars = () => {
             }
           }
           
-          // Validate and sanitize car data
-          carsData = carsData.map((car, index) => ({
-            id: car.id || index + 1,
-            name: car.name || 'Unknown Car',
-            price_per_day: typeof car.price_per_day === 'number' ? car.price_per_day : 0,
-            location: car.location || 'Unknown Location',
-            car_type: car.car_type || 'Standard',
-            description: car.description || 'No description available',
-            owner_email: car.owner_email || '',
-            image_url: car.image_url || undefined
-          }));
+          // Validate and sanitize car data - Здесь исправление на проверку массива
+          if (Array.isArray(carsData)) {
+            carsData = carsData.map((car, index) => ({
+              id: car?.id || index + 1,
+              name: car?.name || 'Unknown Car',
+              price_per_day: typeof car?.price_per_day === 'number' ? car.price_per_day : 0,
+              location: car?.location || 'Unknown Location',
+              car_type: car?.car_type || 'Standard',
+              description: car?.description || 'No description available',
+              owner_email: car?.owner_email || '',
+              image_url: car?.image_url || undefined
+            }));
+          } else {
+            console.warn("carsData is not an array:", carsData);
+            carsData = [];
+          }
           
           console.log("\u{1F697} Final cars data:", carsData);
           
