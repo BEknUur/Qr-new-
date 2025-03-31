@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Car, Filter, ChevronDown, MapPin, Search, Star } from 'lucide-react';
 
@@ -53,37 +53,50 @@ const Cars = () => {
           throw new Error(`Error fetching cars: ${response.status}`);
         }
   
-        const data = await response.json();
-  
-        if (Array.isArray(data)) {
-          setCars(data);
-  
-          let processedData = [...data];
-  
-          if (searchTerm) {
-            processedData = processedData.filter(car =>
-              car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              car.description.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-          }
-  
-          if (priceSort === "asc") {
-            processedData.sort((a, b) => a.price_per_day - b.price_per_day);
-          } else if (priceSort === "desc") {
-            processedData.sort((a, b) => b.price_per_day - a.price_per_day);
-          }
-  
-          setFilteredCars(processedData);
-          setError(null);
+        const responseData = await response.json();
+        
+        
+        let carsData: CarData[] = [];
+        
+        if (Array.isArray(responseData)) {
+          
+          carsData = responseData;
+        } else if (responseData.data && Array.isArray(responseData.data)) {
+        
+          carsData = responseData.data;
+        } else if (responseData.cars && Array.isArray(responseData.cars)) {
+          
+          carsData = responseData.cars;
         } else {
-          console.error("❌ Expected array, but got:", data);
-          setError("Server error: invalid data format.");
-          setCars([]);
-          setFilteredCars([]);
+         
+          console.error("❌ Unexpected response format:", responseData);
+          throw new Error("Invalid response format from server");
         }
+  
+        setCars(carsData);
+  
+        let processedData = [...carsData];
+  
+        if (searchTerm) {
+          processedData = processedData.filter(car =>
+            car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            car.description.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+  
+        if (priceSort === "asc") {
+          processedData.sort((a, b) => a.price_per_day - b.price_per_day);
+        } else if (priceSort === "desc") {
+          processedData.sort((a, b) => b.price_per_day - a.price_per_day);
+        }
+  
+        setFilteredCars(processedData);
+        setError(null);
       } catch (error) {
         console.error('Error fetching cars:', error);
         setError('Failed to load cars. Please try again later.');
+        setCars([]);
+        setFilteredCars([]);
       } finally {
         setLoading(false);
       }
@@ -92,10 +105,9 @@ const Cars = () => {
     fetchCars();
   }, [locationFilter, typeFilter, searchTerm, priceSort]);
   
-
+  // Вычисляем уникальные локации и типы автомобилей из имеющихся данных
   const locations = Array.from(new Set(cars.map(car => car.location)));
   const carTypes = Array.from(new Set(cars.map(car => car.car_type)));
-
   
   const getCarImage = (car: CarData) => {
     if (car.image_url) return car.image_url;
