@@ -20,8 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 UPLOAD_DIR = "uploaded_images"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# This line should be added in your main.py file to serve static files
-# app.mount("/uploaded_images", StaticFiles(directory="uploaded_images"), name="uploaded_images")
+
 
 
 @router.get("/profile")
@@ -130,14 +129,14 @@ def upload_profile_image(
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    # Генерируем уникальное имя файла, например, с текущей датой
+    
     filename = f"{int(time.time())}_{file.filename}"
     file_path = os.path.join(UPLOAD_DIR, filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Сохраняем путь к файлу в БД (без leading slash)
+    
     user.profile_image = f"uploaded_images/{filename}"
     db.commit()
     db.refresh(user)
