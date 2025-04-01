@@ -158,7 +158,7 @@ if (Array.isArray(carsResponse.data)) {
   };
 
   const handleBookCar = () => {
-    navigate(`/booking/`);
+    navigate(`/main/booking/`);
   };
 
   const handleLikeCar = async (car: Car) => {
