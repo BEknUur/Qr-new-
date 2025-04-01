@@ -11,7 +11,7 @@ from datetime import datetime
 router = APIRouter()
 manager = ConnectionManager()
 
-@router.websocket("/ws/сhat/{user_email}")
+@router.websocket("/ws/chat/{user_email}")
 async def websocket_endpoint(
     websocket: WebSocket, 
     user_email: str, 
