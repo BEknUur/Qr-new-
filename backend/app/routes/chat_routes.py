@@ -22,7 +22,7 @@ def get_messages(
     
     receiver_email = receiver.email
     
-    # Get all messages between these two users
+  
     messages = db.query(Message).filter(
         (
             (Message.sender_email == sender_email) & 
