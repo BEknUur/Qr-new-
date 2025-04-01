@@ -157,8 +157,8 @@ if (Array.isArray(carsResponse.data)) {
     });
   };
 
-  const handleBookCar = (car: Car) => {
-    navigate(`/booking/${car.id}`);
+  const handleBookCar = () => {
+    navigate(`/booking/`);
   };
 
   const handleLikeCar = async (car: Car) => {
@@ -321,7 +321,7 @@ if (Array.isArray(carsResponse.data)) {
                     car={car}
                     isLiked={favorites.includes(car.id)}
                     onLike={() => handleLikeCar(car)}
-                    onBook={() => handleBookCar(car)}
+                    onBook={() => handleBookCar()}
                   />
                 ))}
               </div>
