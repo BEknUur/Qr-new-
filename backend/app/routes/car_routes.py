@@ -10,7 +10,7 @@ from app.utils.converters import car_to_response
 
 router = APIRouter()
 
-BASE_URL = "http://68.183.15.162/api"
+BASE_URL ='https://qazaqrental.com'
 
 
 @router.post("/cars", response_model=CarResponse)

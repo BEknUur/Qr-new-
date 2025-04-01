@@ -254,7 +254,7 @@ const Cars = () => {
     fetchCars();
   }, [locationFilter, typeFilter, searchTerm, priceSort]);
   
-  // Безопасное получение уникальных локаций и типов из данных
+ 
   const getUniqueValues = (arr: CarData[], property: keyof CarData): string[] => {
     try {
       if (!arr || !Array.isArray(arr) || arr.length === 0) return [];
@@ -384,7 +384,7 @@ const Cars = () => {
           </div>
         </div>
 
-        {/* Отладочная информация */}
+       
         {error && (
           <div className="mb-8 p-4 bg-red-900/20 border border-red-800 rounded-lg overflow-auto">
             <h3 className="text-red-400 font-bold mb-2">Error Details</h3>
